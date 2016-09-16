@@ -917,42 +917,6 @@ static void *posixovl_init(struct fuse_conn_info *conn)
   return NULL;
 }
 
-static int posixovl_fcopy(int dfd, const char *source)
-{
-  int sfd = open(source, O_RDONLY);
-  ssize_t ret;
-  char buffer[65536];
-
-  if (sfd < 0)
-    return -errno;
-  while ((ret = read(sfd, buffer, sizeof(buffer))) > 0)
-    if (write(dfd, buffer, ret) < 0) {
-      ret = -errno;
-      break;
-    }
-  return ret;
-}
-
-/**
- * The size of the inode type may be larger than that of the type that rand()
- * returns, so call rand() as often as needed to fill all bits.
- * Minus 1 is used because it may be a signed integer whose sign is never set.
- * So in the usual case of ino_t being 64 bit and int being 32 bit, we will
- * call rand() thrice.
- */
-static ino_t make_inum(void)
-{
-  static const unsigned int advance =
-      sizeof(__typeof__(rand())) * CHAR_BIT - 1;
-  ino_t ino = 0;
-
-  for (unsigned int b = 0; b < sizeof(ino) * CHAR_BIT; b += advance) {
-    ino <<= advance;
-    ino ^= rand();
-  }
-  return ino;
-}
-
 /**
  * hl_drop - drop nlink count of hardlink master
  * @l1_path:	name of the L1 file

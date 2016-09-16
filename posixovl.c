@@ -1573,7 +1573,7 @@ static int posixovl_symlink(const char *oldpath, const char *newpath)
 	if ((ret = hcb_update(&info)) < 0)
 		return ret;
 
-	fd = openat(root_fd, at(newpath), O_WRONLY | O_CREAT | O_EXCL, 0);
+	fd = openat(root_fd, at(newpath), O_WRONLY | O_CREAT | O_EXCL, S_IRUGO);
 	if (fd < 0) {
 		ret = -errno;
 		unlinkat(root_fd, at(info.path), 0);

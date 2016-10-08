@@ -1116,7 +1116,7 @@ static int hl_promote(const char *l0_path, const struct hcb *orig_info,
 	hcb_update(&new_info);
 
 	/* instantiate first link into readdir visibility */
-	fd = openat(root_fd, at(l0_path), O_WRONLY | O_CREAT | O_EXCL, 0);
+	fd = openat(root_fd, at(l0_path), O_WRONLY | O_CREAT | O_EXCL, S_IRUGO);
 	if (fd < 0) {
 		ret = -errno;
 		goto out3;
@@ -1235,7 +1235,7 @@ static int hl_instantiate(const char *oldpath, const char *newpath)
 	if ((ret = hcb_update(&cb_new)) < 0)
 		goto out;
 
-	fd = openat(root_fd, at(newpath), O_WRONLY | O_CREAT | O_EXCL, 0);
+	fd = openat(root_fd, at(newpath), O_WRONLY | O_CREAT | O_EXCL, S_IRUGO);
 	if (fd < 0) {
 		ret = -errno;
 		goto out2;
@@ -1355,7 +1355,7 @@ static int posixovl_mknod(const char *path, mode_t mode, dev_t rdev)
 	if ((ret = hcb_update(&info)) < 0)
 		return ret;
 
-	fd = openat(root_fd, at(path), O_WRONLY | O_CREAT | O_EXCL, 0);
+	fd = openat(root_fd, at(path), O_WRONLY | O_CREAT | O_EXCL, S_IRUGO);
 	if (fd < 0) {
 		ret = -errno;
 		unlinkat(root_fd, at(info.path), 0);

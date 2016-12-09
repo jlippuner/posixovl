@@ -782,7 +782,8 @@ static int posixovl_chmod(const char *path, mode_t mode)
 	ret = hcb_get_deref(path, &info);
 	if (ret == -ENOENT_HCB) {
 		if (supports_permissions(path))
-			return retcode_int(fchmodat(root_fd, at(path), mode,
+			// underlying file must be readable and writable by the user
+			return retcode_int(fchmodat(root_fd, at(path), mode | S_IRUSR | S_IWUSR,
 			       AT_SYMLINK_NOFOLLOW));
 		if ((ret = hcb_new(path, &info, 1)) < 0)
 			return ret;
@@ -866,7 +867,8 @@ static int posixovl_create(const char *path, mode_t mode,
 	if (could_be_too_long(path))
 		return -ENAMETOOLONG;
 
-	fd  = openat(root_fd, at(path), filp->flags, mode);
+	// underlying file must be readable and writable by the user
+	fd  = openat(root_fd, at(path), filp->flags, mode | S_IRUSR | S_IWUSR);
 	if (fd < 0)
 		return -errno;
 
@@ -1297,8 +1299,8 @@ static int posixovl_mkdir(const char *path, mode_t mode)
 		return -EPERM;
 	if (could_be_too_long(path))
 		return -ENAMETOOLONG;
-
-	ret = mkdirat(root_fd, at(path), mode);
+	// underlying file must be readable and writable by the user
+	ret = mkdirat(root_fd, at(path), mode | S_IRUSR | S_IWUSR | S_IXUSR);
 	if (ret < 0)
 		return -errno;
 
@@ -1331,7 +1333,8 @@ static int posixovl_mknod(const char *path, mode_t mode, dev_t rdev)
 		return -EPERM;
 
 	if (!assume_vfat) {
-		ret = mknodat(root_fd, at(path), mode, rdev);
+		// underlying file must be readable and writable by the user
+		ret = mknodat(root_fd, at(path), mode | S_IRUSR | S_IWUSR, rdev);
 		if (ret < 0 && errno != EPERM)
 			return ret;
 		else if (ret >= 0)
